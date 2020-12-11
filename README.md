@@ -26,7 +26,7 @@ Robotics is one of the upcoming technologies that can change the world. With sof
 
 There are many reasons why ROS is popular in robotics software development. One of them is its modular design. ROS was designed to be as distributed and modular as possible. Different tasks can be developed separately, giving developers choices: whether using completed parts from others or implementing by themselves. Moreover, it also provides hardware abstraction. An extensive knowledge of hardware is not required. A robot can be moved without much knowledge of specifiation of the robot or background mathematical in kinetics and dynamics. Hence, we can save our time and effort in development process. 
 
-Within the scope of this project, we develop our robotics software using the platform TheConstruct. It is an online platform featuring Ubuntu as its operating system, combining with ROS kinetic and Gazebo as real world simulator, etc. The robot model is Turtlebot 3 Burger. There are 4 tasks we need to achieve via this project. They will be explained in details in the next section.
+Within the scope of this project, we develop our robotics software using the platform TheConstruct. It is an online platform featuring Ubuntu as its operating system, combining with Gazebo as real world simulator and ROS kinetic, etc. The robot model is Turtlebot 3 Burger. There are 4 tasks we need to achieve via this project. They will be explained in details in the next section.
 
 ## Objectives
 
@@ -67,15 +67,24 @@ ROS topic acts like a middleman who is responsible to transmit the data between 
 The name says it all. This is the data structure that nodes publish to the topic in order to communicate with other nodes. 
 
 - ROS Services <br></br>
-
-- ROS Action
-aksdjakjsdakjsdkajsd
-- ROS Packages
-kasjkjaksdjakds
-- ROS Basic Commands
-aksdkajsdkajskdjakjsd
-
-
+A ROS service is a client/server system which is used to transfer the data between nodes. Here are some main characteristics of services.
+  - It is synchronous, which means when a client sends a request, it will be blocked until receive a response from the server.
+  - A service is defined by name, a pair of messages
+  - The relation between server and client is one to many, which means one server can have many clients. 
+Compared to topics, ROS services are kind of complement part of topics: client/server architecture vs unidirectional data streams. 
+- ROS Action <br></br>
+Action is very similar to service. It is an asynchronous call to other node's functionality. The main difference is unlike service, when a node call an action, it doesn't necessarily have to wait/to be blocked for/until that action is completed. 
+  - The node that provides the functionality must have an action server, which allows the other nodes to call to its action functionality.
+  - The node that calls to the functionality must have an action client, which allows this node to connect to the action server of another node.
+  
+- ROS Packages <br></br>
+A ROS software is comprised of different packages. A package might contain anything that can be considered as an useful module like ROS nodes, ROS-independent library, configuration files, third-party software, dataset, etc. In general, a software is designed in the following principle: enough functionality to be useful and reusable, not too much functionality that the package becomes complicated and is hardly reused from other software. <br></br>
+Normally, a package will contain the following files/folders:
+  - launch folder: which contains all the launch files. Basically, a launch file describe the nodes that should be run, parameters that should be set, and other attributes of launching a collection of ROS nodes.
+  - src folder: which contains all the sources files, especially Python source that are exported to other packages.
+  - CMakeLists.txt: CMake build file
+  - package.xml: a file, according to Wiki ROS, defines properties about the package such as the package name, version numbers, authors, maintainers, and dependencies on other catkin packages.
+  
 ## Implementation
 
 ## Conclusion
