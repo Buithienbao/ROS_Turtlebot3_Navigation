@@ -26,7 +26,7 @@ Robotics is one of the upcoming technologies that can change the world. With sof
 
 There are many reasons why ROS is popular in robotics software development. One of them is its modular design. ROS was designed to be as distributed and modular as possible. Different tasks can be developed separately, giving developers choices: whether using completed parts from others or implementing by themselves. Moreover, it also provides hardware abstraction. An extensive knowledge of hardware is not required. A robot can be moved without much knowledge of specifiation of the robot or background mathematical in kinetics and dynamics. Hence, we can save our time and effort in development process. 
 
-Within the scope of this project, we develop our robotics software using the platform TheConstruct. It is an online platform featuring Ubuntu as its operating system, combining with Gazebo as real world simulator and ROS kinetic, etc. The robot model is Turtlebot 3 Burger. There are 4 tasks we need to achieve via this project. They will be explained in details in the next section.
+Within the scope of this project, we develop our robotics software using the platform TheConstruct. It is an online platform featuring Ubuntu as its operating system, combining with Gazebo as real world simulator and ROS kinetic, etc. The robot model is Turtlebot 3 Burger. Via this project, we want to apply the theory that we have learned in developing a simple program which can perform 4 different tasks. They will be explained in details in the next section.
 
 ## Objectives
 
@@ -86,6 +86,59 @@ Normally, a package will contain the following files/folders:
   - package.xml: a file, according to Wiki ROS, defines properties about the package such as the package name, version numbers, authors, maintainers, and dependencies on other catkin packages.
   
 ## Implementation
+
+<h4 align="center">
+  <ins>
+    Task 1. Move the robot with simple /cmd_vel publishing
+  </ins>
+</h4>
+
+<ol stype="list-style-type:lower-roman;">
+  <li>Move the robot with simple /cmd_vel publishing</li>
+  <li>B</li>
+  <li>C</li>
+</ol>
+
+<h4 align="center">
+  <ins>
+    Task 2. Map the whole environment
+  </ins>
+</h4>
+
+In this project, in order to navigate autonomously through the map, the map must be created first so that the robot can localize itself in it (or we can say it will remember the environment around). 
+Here are the main steps to construct a map:
+
+<ol>
+  <li>
+    Launch the package we developed above or use the <strong>turtlebot3_teleop_key.launch</strong> launch file from <strong>turtlebot3_teleop</strong> to move the Turtlebot 3 with the keyboard. <br></br>
+    
+  ```
+    roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
+  ```
+    
+  </li>
+    
+  <li>
+  </li>
+  <li>
+  </li>
+</ol>
+
+
+
+<h4 align="center">
+  <ins>
+    Task 3. Reach a goal while avoiding obstacles
+  </ins>
+</h4>
+
+
+<h4 align="center">
+  <ins>
+    Task 4. Navigate through the map following a set of waypoints 
+  </ins>
+</h4>
+
 
 ## Conclusion
 
