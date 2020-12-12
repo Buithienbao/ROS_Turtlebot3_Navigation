@@ -115,12 +115,86 @@ Here are the main steps to construct a map:
   ```
     roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
   ```
-    
+     
   </li>
     
   <li>
+    Then we are going to use the node <strong>slam_gmapping</strong> provided by <strong>gmapping</strong> package. We will create a new launch file, refer to this node and initialize the required parameters.
+    
+  ```
+    <node pkg="gmapping" type="slam_gmapping" name="turtlebot3_slam_gmapping" output="screen">
+        <param name="base_frame" value="base_footprint"/>
+        <param name="odom_frame" value="odom"/>
+        <param name="map_update_interval" value="2.0"/>
+        <param name="maxUrange" value="6.0"/>
+        ...
+    </node>    
+  ```
+
+   Among these parameters, we pay attention only on <strong>maxUrange</strong> param since this parameter sets how far your laser will be considered to create the map. Greater range will create maps faster and its less probable that the robot gets lost. The downside its that consumes more resources. Here we set it to 6. 
+   Now we are able to use this node to create the 2D map of the environment. When the robot start moving, the odometry and the laser scans collected from the LiDAR sensor will be combined to create an occupancy map. In this 2D map, each cell represents the probability of occupancy (whether this cell is free or occupied or unknown). The data format of this map is <strong>nav_msgs/OccupancyGrid.msg</strong>:
+    
+  ```
+    std_msgs/Header header
+    nav_msgs/MapMetaData info
+    int8[] data
+  ```
+  Here the <strong>data</strong> variable contains the probabilities of occupancy ranging from 0 to 100 where 0 represents completely free and 100 represents completely occupied, -1 for unknown cases. 
   </li>
+  
   <li>
+    We can track the mapping process by using the visualization tool <strong>RViz</strong>. We have 2 options: either launch a naked RViz and then add the proper elements like <strong>LaserScan</strong> and <strong>Map</strong> or launch RViz with a predefined configuration for mapping. Here we will go with 2nd option. Launch this tool by type the command to the terminal:
+  
+  ```
+    rosrun rviz rviz -d `rospack find turtlebot3_slam`/rviz/turtlebot3_slam.rviz
+  ```
+    
+  Or we can add this command to the launch file so that instead of running 2 different commands (1 for launch file and 1 for this RViz tool), we need to run only the command for launch file. 
+  
+  ```
+    <node type="rviz" name="rviz_mapping_pkg" pkg="rviz" args="-d $(find turtlebot3_slam)/rviz/turtlebot3_slam.rviz" />
+  ```
+    
+  Here are some screenshots when you start the mapping process:
+  
+  
+<p align="center">
+  <p align = "center">
+    <img  src = "assets/ros_master.png">
+    <em> Initial RViz screen</em>
+  </p>
+</p>
+
+<p align="center">
+  <p align = "center">
+    <img  src = "assets/ros_master.png">
+    <em> Robot is moving around the environment</em>
+  </p>
+</p>
+  
+<p align="center">
+  <p align = "center">
+    <img  src = "assets/ros_master.png">
+    <em> The map is completed </em>
+  </p>
+</p>
+  
+  </li>
+  
+  <li>
+    After the map is constructed, we can save it so that we can use it later. By typing this command:
+  
+      ```
+        rosrun map_server map_saver -f caffeteria
+      ```
+      
+   the map is saved with the name <strong>caffeteria</strong>. Modify it with any other name as you want. 
+   This will create 2 different files:
+    
+    - A Portable Map Gray (PGM) file contains the occupancy map data.
+    - A yaml file contains the metadata of the map such as image, resolution, origin, etc.
+    
+    
   </li>
 </ol>
 
@@ -132,6 +206,7 @@ Here are the main steps to construct a map:
   </ins>
 </h4>
 
+For this task, we need to go through
 
 <h4 align="center">
   <ins>
