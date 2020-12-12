@@ -392,6 +392,6 @@ Here we notice that the waypoint is represented by an yellow arrow of the same o
   I would like to say thank to Professor Ralph SEULIN, Raphael DUVERNE and Daniel BRAUN. I really appreciate your time and effort in guiding me through this project. 
   
 ## References
-  - [WIKI ROS](http://wiki.ros.org/)
+  - [Wiki ROS](http://wiki.ros.org/)
   - [Follow waypoint package](https://github.com/danielsnider/follow_waypoints)
-  - ROS By Example, A Do-It-Yourself Guide to the Robot Operating System, VOLUME 1, A PI ROBOT PRODUCTION, R. PATRICK GOEBEL. Section 8.5.3 [Book](https://drive.google.com/file/d/1aZ8jmMl6UAiN0Qi_xSbD2nOgiCnx72y3/view)
+  - ROS By Example, A Do-It-Yourself Guide to the Robot Operating System, VOLUME 1, A PI ROBOT PRODUCTION, R. PATRICK GOEBEL
