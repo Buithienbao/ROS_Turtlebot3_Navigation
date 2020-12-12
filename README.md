@@ -93,7 +93,7 @@ Normally, a package will contain the following files/folders:
   </ins>
 </h4>
 
-<ol stype="list-style-type:lower-roman;">
+<ol>
   <li>Move the robot with simple /cmd_vel publishing</li>
   <li>B</li>
   <li>C</li>
@@ -130,6 +130,7 @@ Here are the main steps to construct a map:
         ...
     </node>    
   ```
+   Check the source code for the full version of this file. 
 
    Among these parameters, we pay attention only on <strong>maxUrange</strong> param since this parameter sets how far your laser will be considered to create the map. Greater range will create maps faster and its less probable that the robot gets lost. The downside its that consumes more resources. Here we set it to 6. 
    Now we are able to use this node to create the 2D map of the environment. When the robot start moving, the odometry and the laser scans collected from the LiDAR sensor will be combined to create an occupancy map. In this 2D map, each cell represents the probability of occupancy (whether this cell is free or occupied or unknown). The data format of this map is <strong>nav_msgs/OccupancyGrid.msg</strong>:
@@ -157,42 +158,40 @@ Here are the main steps to construct a map:
     
   Here are some screenshots when you start the mapping process:
   
-  
-<p align="center">
-  <p align = "center">
-    <img  src = "assets/ros_master.png">
-    <em> Initial RViz screen</em>
-  </p>
-</p>
 
-<p align="center">
-  <p align = "center">
-    <img  src = "assets/ros_master.png">
-    <em> Robot is moving around the environment</em>
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/ros_master.png">
+      <em> Initial RViz screen</em>
+    </p>
   </p>
-</p>
-  
-<p align="center">
-  <p align = "center">
-    <img  src = "assets/ros_master.png">
-    <em> The map is completed </em>
+
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/ros_master.png">
+      <em> Robot is moving around the environment</em>
+    </p>
   </p>
-</p>
+
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/ros_master.png">
+      <em> The map is completed </em>
+    </p>
+  </p>
   
   </li>
   
   <li>
     After the map is constructed, we can save it so that we can use it later. By typing this command:
   
-      ```
-        rosrun map_server map_saver -f caffeteria
-      ```
+      rosrun map_server map_saver -f caffeteria
       
    the map is saved with the name <strong>caffeteria</strong>. Modify it with any other name as you want. 
    This will create 2 different files:
     
-    - A Portable Map Gray (PGM) file contains the occupancy map data.
-    - A yaml file contains the metadata of the map such as image, resolution, origin, etc.
+  - A Portable Map Gray (PGM) file contains the occupancy map data.
+  - A yaml file contains the metadata of the map such as image, resolution, origin, etc.
     
     
   </li>
@@ -206,7 +205,144 @@ Here are the main steps to construct a map:
   </ins>
 </h4>
 
-For this task, we need to go through
+This task can be considered as a combination of 2 tasks: 
+
+<ol>
+  <li>
+    <h4> Localization </h4>
+    In order to localize the robot, we are going to use the <strong>amcl</strong> node provided by <strong>AMCL (Adaptive Monte Carlo Localization)</strong> package. Basically, it uses an adaptive particle filter to track the pose of the robot with respect to the known 2D map. 
+   
+   Just like the previous task, now we need to create a launch file for this:
+   
+   -  Add the constructed map and run with the map server node:
+   
+      ```
+            <arg name="map_file" default="$(find t3_navigation)/maps/caffeteria.yaml"/>
+            <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+      ```
+   -  Add the amcl node as well as the required parameters:
+   
+      ```
+        <node pkg="amcl" type="amcl" name="amcl">
+            <param name="min_particles"             value="1000"/>
+            <param name="max_particles"             value="5000"/>
+            <param name="kld_err"                   value="0.02"/>
+            <param name="update_min_d"              value="0.20"/>
+            <param name="update_min_a"              value="0.20"/>
+            ....
+        </node>
+      ```
+   Check the source code for the full version of this file. 
+   The list of topics that it subscribes to and the corresponding message:
+    
+  - <strong>/map (nav_msgs/OccupancyGrid)</strong>: get the constructed map for localization task
+  - <strong>/scan (sensor_msgs/LaserScan)</strong>: get the laser scan data
+  - <strong>/initialpose (geometry_msgs/PoseWithCovarianceStamped)</strong>: get the pose to initialize particle filter
+  
+   The list of topics that it publishes to and the corresponding message:
+      
+  - <strong>/amcl_pose (geometry_msgs/PoseWithCovarianceStamped)</strong>: publish the estimated pose of the robot with covariance (the uncertainty of the measurement)
+  - <strong>/particlecloud (geometry_msgs/PoseArray)</strong>: publish the set of pose estimation maintained by the filter (this set can be visualized in RViz by adding a PoseArray display which subscribes to this topic as shown in the figure below)
+  
+   Besides, this node also subcribes and publishes at the same time to the topic <strong>/tf</strong> which is necessary to provide relationship between different frames. 
+   
+   Now let's test our localization task by running the commands:<br>
+       ```
+        roslaunch t3_navigation start_localization.launch
+       ```
+   <br>to start the launch file and <br>
+       ```
+        roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
+       ```
+   <br> to control the robot with the keyboard.
+   
+   Now switch to RViz screen (RViz running command is already included in the launch file). The screen should look like this:
+   
+   [insert image here]
+   
+   First of all, we need to send a initial pose to the <strong>amcl</strong> node. This can be done by using the function <strong>2D Pose Estimate </strong> of RViz tool. Click on the button then click on the approximate initial pose of the robot on the map. A message will be published to <strong>/initialpose</strong> topic which <strong>amcl</strong> node subscribes to. Initially, the number of particles is very large. As we start moving the robot, the node will start the localization process, and when the robot pose is well estimated, the number of particles is decreased. This number of particles represents the uncertainty of robot pose estimation. The more uncertain the more particles it will have. Due to the ability to adjust the amount of particles on the fly, it is called <strong>adaptive</strong>. This enables the robot to make a trade-off between processing speed and localization accuracy.
+   
+   [insert image here]
+   
+   Et voila, our robot pose is well estimated. 
+  </li>
+  
+  <li>
+    <h4> Path Planning </h4>
+  
+  Now we already have the constructed map and we are able to localize the robot on the map. That is everything we need to start the path planning process.
+  This time, we are going to use the <strong>move_base</strong> node provided by the <strong>move_base</strong> package, which is a part of the navigation stack (see the image below). This node links together the a global and local planner to accomplish its global navigation task. 
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/task3/overview_tf.png">
+      <em> The navigation stack </em>
+    </p>
+  </p>
+  
+  Here is the list of topics that this node subscribes and publishes to. It's worth mentioning that this node provides an implementation of <strong>SimpleActionServer</strong> from <strong>action_lib</strong> package. There are 2 ways to send a goal to this node, either by this implementation or not. See the list below. 
+  
+  - <strong>move_base/goal (move_base_msgs/MoveBaseActionGoal)</strong>: receive the goal using SimpleActionServer and keep track of the goal status.
+  - <strong>move_base_simple/goal (geometry_msgs/PoseStamped)</strong>: receive the goal without using SimpleActionServer (cannot keep track of the goal status).
+  - <strong>/cmd_vel (geometry_msgs/Twist)</strong>: publish the velocity information to the mobile base. 
+  
+  This time, before creating launch file for this task, we need to define all the required parameters first. 
+  
+  - <strong>costmap_common_params_burger.yaml</strong>: 
+  
+          ...
+          raytrace_range: 3.5
+          observation_sources: scan
+          scan: {data_type: LaserScan, topic: scan, marking: true, clearing: true}
+          ...
+     
+     Just note the observation_sources parameters, that uses the topic /scan to read the laser readings. The camera is not used for navigation. Also note the ray trace range is only 3.5 meters. This is just to make detections faster and not have in mind areas that aren't close enough.
+
+  - <strong>local_costmap_params.yaml</strong>:
+        
+      ```
+        ...
+        static_map: false
+        ...
+      ```
+     Note that the static_map parmeter is set to False. This is because the local costmap is built from the laser readings, not from any static map.
+
+  - <strong>global_costmap_params.yaml</strong>:
+  
+      ```
+        ...
+        static_map: true
+        ...
+      ```
+     Note that the static_map parmeter is here set to True. This is because the global costmap is built from the static map you created in previous steps.
+
+  - <strong>move_base_params.yaml</strong>:  These are some general parameters for the move_base node.
+
+  - <strong>dwa_local_planner_params.yaml</strong>: These are some parameters related to the local planner.
+  
+  Now we are going to create a launch file for this task which includes every parameter files above. 
+        
+        ...
+        <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+              <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+
+              <rosparam file="$(find t3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />
+              <rosparam file="$(find t3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />
+              <rosparam file="$(find t3_navigation)/param/local_costmap_params.yaml" command="load" />
+              <rosparam file="$(find t3_navigation)/param/global_costmap_params.yaml" command="load" />
+              <rosparam file="$(find t3_navigation)/param/move_base_params.yaml" command="load" />
+              <rosparam file="$(find t3_navigation)/param/dwa_local_planner_params.yaml" command="load" />
+        </node>
+        ...
+  Check the source code for the full version of this file. 
+  Now run this command and open RViz screen:
+        
+        roslaunch t3_navigation start_navigation.launch
+  
+  We start by choose the initial pose of the robot like we did above. Click on <strong>2D Pose Estimate</strong> and click on the map to choose the initial pose. Then click on <strong>2D Nav Goal</strong> and click on the map to choose the goal. After creating a goal, a goal message (geometry_msgs/PoseStamped) will be published to /move_base_simple/goal topic. Then we can see the robot start moving towards the goal, the <strong>move_base</strong> node will take care of the obstacles avoiding task as well. 
+  
+  [insert image here]
+  </li>
+</ol>
 
 <h4 align="center">
   <ins>
@@ -214,7 +350,48 @@ For this task, we need to go through
   </ins>
 </h4>
 
+  For this task, we are going to adopt the code from [this repository](https://github.com/danielsnider/follow_waypoints). This package performs the navigation task by using the <strong>2D Pose Estimate</strong> of RViz tool as a method to create waypoints. This server will listen to publications into the topic <strong>/initialpose</strong> and store those poses until its instructed to send them to move_base to be executed. However, this approach has a small drawback. Your last waypoint must be the same as the initial pose of the robot since our localization module will take the last waypoint as the estimate pose. Due to this reason, we propose another approach using the <strong>Publish Point</strong> button of RViz instead of <strong>2D Pose Estimate</strong>. This function will publish the waypoint to the topic <strong>/clicked_point</strong> instead of <strong>/initialpose</strong>. Therefore, it does not affect the localization module. However, the type of message that is sent to <strong>/clicked_point</strong> is <strong>geometry_msgs/PointStamped</strong>. Hence, we need to convert it to <strong>geometry_msgs/PoseWithCovarianceStamped</strong> before sending all these waypoints to the <strong>move_base</strong>. 
+  
+  So, we start by creating a launch file for this:
+    
+   - Change the way logs are shown. In this case it will show which node, function and line in the code is that log executed.
+   
+    <env name="ROSCONSOLE_FORMAT" value="[${severity}][${thread}][${node}/${function}:${line}]: ${message}"/>
+   
+   - Define the topic where we will public the waypoint.
+   
+    <arg name="waypoints_topic" default="/clicked_point"/>
+   
+   - Define the node custom_follow_waypoints as well as the frame and the topic params values.
+   
+    <node pkg="t3_navigation" type="custom_follow_waypoints.py" name="custom_follow_waypoints" output="screen" clear_params="true">
+        <param name="goal_frame_id" value="map"/>
+        <param name="custom_waypointstopic" value="$(arg waypoints_topic)"/>
+    </node>
+  
+  Then, we make modifications as discussed above to the original file <strong>follow_waypoints.py</strong> and rename it <strong>custom_follow_waypoints.py</strong>
+  
+  Now run these commands to perform the task:
+    
+    roslaunch t3_navigation start_navigation.launch
+    roslaunch t3_navigation start_follow_waypoints.launch
+  
+  Switch to RViz screen. We start by set the initial position of the robot. Then click on the <strong>Publish Point</strong> to create waypoint. After that, send all the waypoints to <strong>move_base</strong> node by running this command:
+  
+     rostopic pub /path_ready std_msgs/Empty -1
+
+This command will publish a message (of type <strong>std_msgs/Empty</strong>) to the <strong>/path_ready</strong> topic. It means all the waypoints have been set and start the following waypoint process. 
+The RViz screen should look like this. 
+
+  [insert image here]
+
+Here we notice that the waypoint is represented by an yellow arrow of the same orientation. This is because when we convert the waypoint from type <strong>geometry_msgs/PointStamped</strong>, which only contains position data, to <strong>geometry_msgs/PoseWithCovarianceStamped</strong> which is defined by both position and orientation data, we set the orientation fixed for every waypoints. This is acceptable since we do not require orientation for our waypoints.
 
 ## Conclusion
-
+  This entry level project is a good start for us to apply what we have learned so far about ROS in developing a simple robotic application. We have completed 4 differents tasks: Move the robot with simple /cmd_vel publishing, mapping an environment to 2D map, navigating inside that map and following a set of waypoints. These interesting tasks cover all the basic of ROS: node, topic, publishers/subscribers, messages, etc. Via this project, we get to know how the modular design helps ROS become very popular in the robotic software community. The freedom of integrating different nodes together is a very strong feature. It helps developers save their time and effort. Beside, TheConstruct platform is very helpful for newbies like us in learning ROS with many useful courses. Undoubtedly, this project is a cornerstone for the later steps in learning ROS. <br>
+  I would like to say thank to Professor Ralph SEULIN, Raphael DUVERNE and Daniel BRAUN. I really appreciate your time and effort in guiding me through this project. 
+  
 ## References
+  - [WIKI ROS](http://wiki.ros.org/)
+  - [Follow waypoint package](https://github.com/danielsnider/follow_waypoints)
+  - ROS By Example, A Do-It-Yourself Guide to the Robot Operating System, VOLUME 1, A PI ROBOT PRODUCTION, R. PATRICK GOEBEL. Section 8.5.3 [Book](https://drive.google.com/file/d/1aZ8jmMl6UAiN0Qi_xSbD2nOgiCnx72y3/view)
