@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="t3_navigation" type ="move_robot.py" name="MoveRobot" output="screen"></node>      
+</launch>
