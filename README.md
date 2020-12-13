@@ -89,14 +89,93 @@ Normally, a package will contain the following files/folders:
 
 <h4 align="center">
   <ins>
-    Task 1. Move the robot with simple /cmd_vel publishing
+    Task 1. Move the robot with simple <strong>/cmd_vel</strong> publishing
   </ins>
 </h4>
 
+Now we are going to create a script that move the robot by publishing the velocity to the <strong>/cmd_vel</strong> topic.
+
 <ol>
-  <li>Move the robot with simple /cmd_vel publishing</li>
-  <li>B</li>
-  <li>C</li>
+  <li>
+  First of all we need to create a launch file:
+ 
+ ```
+  <launch>
+    <node pkg="t3_navigation" type ="move_robot.py" name="MoveRobot" output="screen"></node>      
+  </launch>  
+ ```
+  This simple launch file states that we are going to create a node named MoveRobot of the package t3_navigation (our package we created for this project) and the logic control will be defined in move_robot.py file. 
+  </li>
+  
+  <li>
+  Now we need to investigate the <strong>/cmd_vel</strong> topic to see how can we publish the velocity to it. We start by checking if this topic exists. Type in this command:
+  
+ ```
+   rostopic list 
+ ```
+  This will list all the current topics of the environment. <strong>/cmd_vel</strong> should appear in this list. 
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/task1/cmd_vel.png">
+    </p>
+  </p>
+  
+  Now we need to see what type of message this topic accepts. Check it by typing this command:
+ 
+ ```
+  rostopic info /cmd_vel 
+ ```
+  In the printed result, the type of message is shown as <strong>geometry_msgs/Twist</strong>. Now we know that the message we are going to send to this topic must be of type <strong>geometry_msgs/Twist</strong>. To know more about this message, use this command:
+ 
+ ```
+  rosmsg show geometry_msgs/Twist 
+ ```
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/task1/msg.png">
+    </p>
+  </p>
+  
+  So, this message contains velocity in free space broken into its linear and angular parts. 
+ </li>
+  
+  <li>
+    Now we need to create the python file which contains the logic control of the node. The robot will measure the distance from it to the nearest obstacle in front of it using the laser scan. To do this, we need to subscribe to the <strong>/scan</strong> topic, and add a callback function to handle the returned distance from the laser scan. If the distance is greater than 1 meter, it will keep moving. Otherwise, it will stop. To make it simple, we will let it move straight. In short, inside this code, we need to define the message of type <strong>geometry_msgs/Twist</strong>, and bind a value to the linear speed <strong>x</strong> to make it move straight. Here we set <strong>x</strong> to 0.5. Then publish this data to the <strong>/cmd_vel</strong> node. Here are some lines of code to demonstrate the idea, you can find the full version of this code in the <strong>move_robot.py</strong> file:
+ 
+ ```
+  ...
+  # publish to /cmd_vel topic to send velocity information to the robot 
+  self.pNode = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+
+  # subscribe to /scan topic to get laser information 
+  self.sNode = rospy.Subscriber('/scan', LaserScan, self.callback)
+
+  self.twistMsg = Twist()
+  self.laserMsg = LaserScan()
+  
+  # LaserScan Message callback
+  def callback(self, msg):
+
+      self.laserMsg = msg
+      # If the distance between a robot and a wall is less than 1m, stop
+      if self.getLaserDistance() < 1:
+          self.twistMsg.linear.x = 0.0
+
+      # Keep moving if the distance is greater than 1m.
+      if self.getLaserDistance() > 1:
+          self.twistMsg.linear.x = 0.5
+
+      self.pNode.publish(self.twistMsg) 
+
+  # Get laser distance value at 90 degree to know if there are any obstacle in front of the robot or not
+  def getLaserDistance(self):
+      if len(self.laserMsg.ranges) == 0:
+          return 0
+      return self.laserMsg.ranges[0]
+  ...
+ ```
+  The distance is stored in the <strong>laserMsg</strong> variable, and it will be updated as long as our robot is moving. 
+  </li>
 </ol>
 
 <h4 align="center">
@@ -161,21 +240,21 @@ Here are the main steps to construct a map:
 
   <p align="center">
     <p align = "center">
-      <img  src = "assets/ros_master.png">
+      <img  src = "assets/task2/ini_rviz.png">
       <em> Initial RViz screen</em>
     </p>
   </p>
 
   <p align="center">
     <p align = "center">
-      <img  src = "assets/ros_master.png">
+      <img  src = "assets/task2/rviz_moving.png">
       <em> Robot is moving around the environment</em>
     </p>
   </p>
 
   <p align="center">
     <p align = "center">
-      <img  src = "assets/ros_master.png">
+      <img  src = "assets/task2/rviz_complete.png">
       <em> The map is completed </em>
     </p>
   </p>
@@ -258,11 +337,20 @@ This task can be considered as a combination of 2 tasks:
    
    Now switch to RViz screen (RViz running command is already included in the launch file). The screen should look like this:
    
-   [insert image here]
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/task3/ini.png">
+    </p>
+  </p>
    
    First of all, we need to send a initial pose to the <strong>amcl</strong> node. This can be done by using the function <strong>2D Pose Estimate </strong> of RViz tool. Click on the button then click on the approximate initial pose of the robot on the map. A message will be published to <strong>/initialpose</strong> topic which <strong>amcl</strong> node subscribes to. Initially, the number of particles is very large. As we start moving the robot, the node will start the localization process, and when the robot pose is well estimated, the number of particles is decreased. This number of particles represents the uncertainty of robot pose estimation. The more uncertain the more particles it will have. Due to the ability to adjust the amount of particles on the fly, it is called <strong>adaptive</strong>. This enables the robot to make a trade-off between processing speed and localization accuracy.
    
-   [insert image here]
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/task3/complete_localization.png">
+      <em> The map is completed </em>
+    </p>
+  </p>
    
    Et voila, our robot pose is well estimated. 
   </li>
