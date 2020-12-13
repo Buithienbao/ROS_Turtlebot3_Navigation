@@ -340,6 +340,7 @@ This task can be considered as a combination of 2 tasks:
   <p align="center">
     <p align = "center">
       <img  src = "assets/task3/ini.png">
+      <em> Initial state </em>
     </p>
   </p>
    
@@ -348,7 +349,7 @@ This task can be considered as a combination of 2 tasks:
   <p align="center">
     <p align = "center">
       <img  src = "assets/task3/complete_localization.png">
-      <em> The map is completed </em>
+      <em> Complete localization </em>
     </p>
   </p>
    
@@ -427,8 +428,19 @@ This task can be considered as a combination of 2 tasks:
         roslaunch t3_navigation start_navigation.launch
   
   We start by choose the initial pose of the robot like we did above. Click on <strong>2D Pose Estimate</strong> and click on the map to choose the initial pose. Then click on <strong>2D Nav Goal</strong> and click on the map to choose the goal. After creating a goal, a goal message (geometry_msgs/PoseStamped) will be published to /move_base_simple/goal topic. Then we can see the robot start moving towards the goal, the <strong>move_base</strong> node will take care of the obstacles avoiding task as well. 
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/task3/ini.png">
+      <em> Initial state </em>
+    </p>
+  </p>
   
-  [insert image here]
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/task3/complete_localization.png">
+      <em> Complete navigation </em>
+    </p>
+  </p>
   </li>
 </ol>
 
@@ -471,7 +483,33 @@ This task can be considered as a combination of 2 tasks:
 This command will publish a message (of type <strong>std_msgs/Empty</strong>) to the <strong>/path_ready</strong> topic. It means all the waypoints have been set and start the following waypoint process. 
 The RViz screen should look like this. 
 
-  [insert image here]
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/task4/ini_wp.png">
+      <em> Initialize the set of waypoints (marked as yellow arrow) </em>
+    </p>
+  </p>
+
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/task4/1st.png">
+      <em> Robot moved to the 1st waypoint </em>
+    </p>
+  </p>
+
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/task4/2nd.png">
+      <em> Robot reached the 2nd waypoint </em>
+    </p>
+  </p>
+  
+  <p align="center">
+    <p align = "center">
+      <img  src = "assets/task4/last.png">
+      <em> Robot reached the last waypoint </em>
+    </p>
+  </p>
 
 Here we notice that the waypoint is represented by an yellow arrow of the same orientation. This is because when we convert the waypoint from type <strong>geometry_msgs/PointStamped</strong>, which only contains position data, to <strong>geometry_msgs/PoseWithCovarianceStamped</strong> which is defined by both position and orientation data, we set the orientation fixed for every waypoints. This is acceptable since we do not require orientation for our waypoints.
 
