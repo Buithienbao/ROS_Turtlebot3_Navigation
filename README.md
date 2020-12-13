@@ -177,7 +177,9 @@ Now we are going to create a script that move the robot by publishing the veloci
   The distance is stored in the <strong>laserMsg</strong> variable, and it will be updated as long as our robot is moving. 
   </li>
 </ol>
-
+  
+  Please find the demo video in this [link](https://www.loom.com/share/d5e659273b474adba19433513947922e?sharedAppSource=personal_library).
+  
 <h4 align="center">
   <ins>
     Task 2. Map the whole environment
@@ -276,6 +278,7 @@ Here are the main steps to construct a map:
   </li>
 </ol>
 
+  Please find the demo video in this [link](https://www.loom.com/share/c03b0511fd9b40fea0e0cff1d518bae3?sharedAppSource=personal_library).
 
 
 <h4 align="center">
@@ -444,6 +447,8 @@ This task can be considered as a combination of 2 tasks:
   </li>
 </ol>
 
+  Please find the demo video in this [link](https://www.loom.com/share/6afbf04ad23d48feab3bf1e4fb693ac3?sharedAppSource=personal_library).
+
 <h4 align="center">
   <ins>
     Task 4. Navigate through the map following a set of waypoints 
@@ -512,6 +517,8 @@ The RViz screen should look like this.
   </p>
 
 Here we notice that the waypoint is represented by an yellow arrow of the same orientation. This is because when we convert the waypoint from type <strong>geometry_msgs/PointStamped</strong>, which only contains position data, to <strong>geometry_msgs/PoseWithCovarianceStamped</strong> which is defined by both position and orientation data, we set the orientation fixed for every waypoints. This is acceptable since we do not require orientation for our waypoints.
+  
+  Please find the demo video in this [link](https://www.loom.com/share/3714fcd1aed5456cba12ef70d636926a?sharedAppSource=personal_library).
 
 ## Conclusion
   This entry level project is a good start for us to apply what we have learned so far about ROS in developing a simple robotic application. We have completed 4 differents tasks: Move the robot with simple /cmd_vel publishing, mapping an environment to 2D map, navigating inside that map and following a set of waypoints. These interesting tasks cover all the basic of ROS: node, topic, publishers/subscribers, messages, etc. Via this project, we get to know how the modular design helps ROS become very popular in the robotic software community. The freedom of integrating different nodes together is a very strong feature. It helps developers save their time and effort. Beside, TheConstruct platform is very helpful for newbies like us in learning ROS with many useful courses. Undoubtedly, this project is a cornerstone for the later steps in learning ROS. <br>
